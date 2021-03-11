@@ -1,0 +1,73 @@
+
+const express = require('express'),
+cors = require('cors'),
+mongoose = require('mongoose'),
+config = require('./DB'),
+swaggerJsdoc = require("swagger-jsdoc"),
+swaggerUi = require("swagger-ui-express"),
+rateLimit = require("express-rate-limit");
+
+const options = {
+    // authAction :{ JWT: {name: "JWT", schema: {type: "apiKey", in: "header", name: "Authorization", description: ""}, value: "Bearer <JWT>"} },
+    definition: {
+      openapi: "3.0.0",
+      info: {
+        title: "Tic-Tac-Toe API",
+        version: "0.1.0",
+        description:
+          "CRUD API application made with Express and documented with Swagger",
+        license: {
+          name: "MIT",
+          url: "https://spdx.org/licenses/MIT.html",
+        },
+        contact: {
+          name: "Purest Earth",
+          url: "https://github.com/PurestEarth",
+        },
+      },
+      servers: [
+        {
+            url: "http://localhost:4000",
+        }
+      ],
+    },
+    apis: [
+         //, './models/notification.js', './models/Post.js', './models/Recipe.js', './models/RefreshToken.js', './models/Report.js', './models/User.js'
+         ],
+         schemas: []
+  };
+
+const specs = swaggerJsdoc(options);
+
+mongoose.connect(config.DB, { useNewUrlParser: true, useUnifiedTopology: true }).then(
+    () => {console.log('Database is connected') },
+    err => { console.log('Can not connect to the database'+ err)}
+);
+mongoose.set('useCreateIndex', true)
+mongoose.set('useFindAndModify', false);
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 500
+});
+
+// const recipeRoute = require('./routes/recipe.route');
+
+
+const app = express();
+app.use(cors({ origin: (origin, callback) => callback(null, true), credentials: true }));
+
+app.use(limiter);
+// app.use('/api/recipe', recipeRoute);
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(specs, { explorer: true })
+  );
+const port = process.env.PORT || 4000;
+
+const server = app.listen(port, function(){
+console.log('Listening on port ' + port);
+});
+
+
