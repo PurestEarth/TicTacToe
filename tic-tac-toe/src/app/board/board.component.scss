@@ -1,3 +1,12 @@
 mat-grid-tile {
   background: lightblue;
 }
+
+mat-grid-tile:hover {
+  background: lightgray ;
+}
+
+.grid-list{
+  margin: 3%;
+  max-height: 80%;
+}

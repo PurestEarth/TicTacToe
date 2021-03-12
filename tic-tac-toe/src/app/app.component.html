@@ -7,11 +7,11 @@
 
 <mat-drawer-container class="example-container" hasBackdrop="False">
   <mat-drawer #drawer mode="push">I'm a drawer</mat-drawer>
-  <mat-drawer-content>
-    <app-board></app-board>
-    <button mat-icon-button (click)="drawer.toggle()" aria-label="Toggle game menu">
+  <mat-drawer-content class='content'>
+    <button mat-fab color="primary" (click)="drawer.toggle()" aria-label="Toggle game menu" class='fab-container fab-drawer'>
       <mat-icon>{{getDrawerIcon()}}</mat-icon>
     </button>
+    <app-board></app-board>
   </mat-drawer-content>
 </mat-drawer-container>
 

@@ -6,7 +6,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./board.component.scss']
 })
 export class BoardComponent implements OnInit {
-  tiles = new Array(45); ;
+  tiles = new Array(100); ;
   constructor() { }
 
   ngOnInit(): void {

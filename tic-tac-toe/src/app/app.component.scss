@@ -1,0 +1,12 @@
+.fab-drawer {
+  position : fixed;
+  display : flex;
+  align-self : flex-end;
+  left: 1%;
+  top : 1%;
+  z-index:5;
+}
+.fab-container {
+  display: flex;
+  justify-content: center;
+}
