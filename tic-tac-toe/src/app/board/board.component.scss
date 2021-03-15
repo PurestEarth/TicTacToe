@@ -1,12 +1,24 @@
-mat-grid-tile {
+.unchecked {
   background: lightblue;
 }
 
-mat-grid-tile:hover {
+.unchecked:hover {
   background: lightgray ;
 }
 
-.grid-list{
+.checked{
+  background: whitesmoke;
+}
+
+.board-holder{
   margin: 3%;
-  max-height: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  width: 40%;
+  height: 80% !important;
+}
+
+.mark{
+  font-size: larger;
+  background-color: whitesmoke;
 }
