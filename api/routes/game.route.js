@@ -16,7 +16,7 @@ const gsPostLimit = rateLimit({
 
 function isWinningSequence(seq) {
     counter = 0
-    seq.array.forEach(element => {
+    seq.forEach(element => {
         if(element){
             counter++;
         }
@@ -29,9 +29,10 @@ function isWinningSequence(seq) {
 
 
 function checkForWinners(board, last_i) {
+    console.log('row')
     // check row
     row_seq = []
-    for(let i = max(0, last_i-5); i<min(last_i+5, 100) ;i++) {
+    for(let i = Math.max(0, last_i-5); i<Math.min(last_i+5, 100) ;i++) {
         if(last_i%10 == i%10) {
             row_seq.push(board[i].checked)
         }
@@ -41,16 +42,19 @@ function checkForWinners(board, last_i) {
             return true;
         }
     }
+    console.log(row_seq)
+    console.log('column')
     // check column
     column_seq = []
-    for(let i = max(0, ParseInt((last_i/10)-5)); i<min(ParseInt((last_i/10)+5), 10) ;i++) {
+    for(let i = Math.max(0, parseInt((last_i/10)-5)); i<Math.min(parseInt((last_i/10)+5), 10) ;i++) {
         current_i = i*10 + last_i%10
         row_seq.push(board[current_i].checked)
     }
     if (isWinningSequence(row_seq)){
         return true;
     }
-
+    console.log(column_seq)
+    console.log('axis')
     // check axis WN axis
     axis_wn = []
     axis_ws = []
@@ -58,28 +62,31 @@ function checkForWinners(board, last_i) {
     axis_es = []
     for(let i = 1; i < 5;i++) {
         if ((last_i)%10-i > 0) {
-            axis_wn.push((ParseInt(last_i/10)-i)*10 + (last_i)%10-i)
+            axis_wn.push((parseInt(last_i/10)-i)*10 + (last_i)%10-i)
         }
         if ((last_i)%10+i < 10) {
-            axis_ws.push((ParseInt(last_i/10)+i)*10 + (last_i)%10+i)
+            axis_ws.push((parseInt(last_i/10)+i)*10 + (last_i)%10+i)
         }
         if ((last_i)%10+i < 10) {
-            axis_en.push((ParseInt(last_i/10)-i)*10 + (last_i)%10+i)
+            axis_en.push((parseInt(last_i/10)-i)*10 + (last_i)%10+i)
         }
         if ((last_i)%10+i < 10) {
-            axis_es.push((ParseInt(last_i/10)+i)*10 + (last_i)%10-i)
+            axis_es.push((parseInt(last_i/10)+i)*10 + (last_i)%10-i)
         }
     }
     axis_wn.push(...axis_es)
     axis_wn.push(last_i)
     axis_ws.push(...axis_en)
     axis_ws.push(last_i)
+    console.log(axis_ws)
+    console.log(axis_wn)
     if (isWinningSequence(axis_wn)){
         return true;
     }
     if (isWinningSequence(axis_ws)){
         return true;
     }
+    return false;
 }
 
 
@@ -179,7 +186,7 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
                     backendTile.checked = true
                     backendTile.checker = 'backend'
                     gs.board[player_i - 1] = backendTile;
-                    if (checkForWinners(gs.board, player_i - )) {
+                    if (checkForWinners(gs.board, player_i - 1)) {
                         // TODO response player wins   
                     }
                     else {
@@ -202,4 +209,8 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
     }
 })
 
-module.exports = gameRoutes;
+module.exports = {
+    gameRoutes: gameRoutes,
+    isWinningSequence: isWinningSequence,
+    checkForWinners: checkForWinners
+};

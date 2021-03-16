@@ -32,7 +32,8 @@ const options = {
       ],
     },
     apis: [
-         //, './models/notification.js', './models/Post.js', './models/Recipe.js', './models/RefreshToken.js', './models/Report.js', './models/User.js'
+          './models/Tile.js', './models/Player.js', './models/GameState.js',
+          './routers/game.route.js'
          ],
          schemas: []
   };
@@ -51,14 +52,14 @@ const limiter = rateLimit({
     max: 500
 });
 
-// const recipeRoute = require('./routes/recipe.route');
+const gameRoute = require('./routes/game.route').gameRoutes;
 
 
 const app = express();
 app.use(cors({ origin: (origin, callback) => callback(null, true), credentials: true }));
 
 app.use(limiter);
-// app.use('/api/recipe', recipeRoute);
+app.use('/api/game', gameRoute);
 app.use(
     "/api-docs",
     swaggerUi.serve,
