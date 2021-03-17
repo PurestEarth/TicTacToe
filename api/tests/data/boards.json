@@ -13,6 +13,7 @@
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         ],
         "last_i": 44,
+        "player": "player",
         "expected_result": false
     },
     "2": {
@@ -29,6 +30,7 @@
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         ],
         "last_i": 44,
+        "player": "ai",
         "expected_result": false
     }
 }

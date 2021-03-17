@@ -28,13 +28,26 @@ function isWinningSequence(seq) {
 }
 
 
-function checkForWinners(board, last_i) {
-    console.log('row')
+function arrayToBoard(board) {
+    let tiles = [];
+    let ownMap = {0: 'neither', 1: 'player', 2: 'ai'}
+    for( let i=0; i<board.length; i++) {
+        let tile = new Tile()
+        tile.i = i
+        tile.checked = board[i] != 0
+        tile.checker = ownMap[board[i]]
+        tiles.push(tile)
+    }
+    return tiles
+}
+
+
+function checkForWinners(board, last_i, player) {
     // check row
     row_seq = []
     for(let i = Math.max(0, last_i-5); i<Math.min(last_i+5, 100) ;i++) {
-        if(last_i%10 == i%10) {
-            row_seq.push(board[i].checked)
+        if(parseInt(last_i/10) == parseInt(i/10)) {
+            row_seq.push(board[i].checked && (board[i].checker === player))
         }
     }
     if(row_seq.length >= 5) {
@@ -42,48 +55,43 @@ function checkForWinners(board, last_i) {
             return true;
         }
     }
-    console.log(row_seq)
-    console.log('column')
     // check column
     column_seq = []
     for(let i = Math.max(0, parseInt((last_i/10)-5)); i<Math.min(parseInt((last_i/10)+5), 10) ;i++) {
         current_i = i*10 + last_i%10
-        row_seq.push(board[current_i].checked)
+        row_seq.push(board[current_i].checked && (board[i].checker === player))
     }
     if (isWinningSequence(row_seq)){
         return true;
     }
-    console.log(column_seq)
-    console.log('axis')
+
     // check axis WN axis
     axis_wn = []
     axis_ws = []
     axis_en = []
     axis_es = []
-    for(let i = 1; i < 5;i++) {
-        if ((last_i)%10-i > 0) {
-            axis_wn.push((parseInt(last_i/10)-i)*10 + (last_i)%10-i)
+    for(let i = 1; i <5;i++) {
+        if ((last_i)%10-i >= 0) {
+            axis_wn.unshift(board[(parseInt(last_i/10)-i)*10 + (last_i)%10-i].checked && (board[i].checker === player))
         }
         if ((last_i)%10+i < 10) {
-            axis_ws.push((parseInt(last_i/10)+i)*10 + (last_i)%10+i)
+            axis_ws.push(board[(parseInt(last_i/10)+i)*10 + (last_i)%10+i].checked && (board[i].checker === player))
         }
         if ((last_i)%10+i < 10) {
-            axis_en.push((parseInt(last_i/10)-i)*10 + (last_i)%10+i)
+            axis_en.unshift(board[(parseInt(last_i/10)-i)*10 + (last_i)%10+i].checked && (board[i].checker === player))
         }
         if ((last_i)%10+i < 10) {
-            axis_es.push((parseInt(last_i/10)+i)*10 + (last_i)%10-i)
+            axis_es.push(board[(parseInt(last_i/10)+i)*10 + (last_i)%10-i].checked && (board[i].checker === player))
         }
     }
-    axis_wn.push(...axis_es)
-    axis_wn.push(last_i)
-    axis_ws.push(...axis_en)
-    axis_ws.push(last_i)
-    console.log(axis_ws)
-    console.log(axis_wn)
+    axis_wn.push(board[last_i].checked && (board[i].checker === player))
+    axis_wn.push(...axis_ws)
+    axis_en.push(board[last_i].checked && (board[i].checker === player)) 
+    axis_en.push(...axis_es)
     if (isWinningSequence(axis_wn)){
         return true;
     }
-    if (isWinningSequence(axis_ws)){
+    if (isWinningSequence(axis_es)){
         return true;
     }
     return false;
@@ -176,7 +184,7 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
                 playerTile.checked = true
                 playerTile.checker = 'player'
                 gs.board[player_i] = playerTile;
-                if (checkForWinners(gs.board, player_i)) {
+                if (checkForWinners(gs.board, player_i, 'player')) {
                     // TODO response player wins   
                 }
                 else {
@@ -184,9 +192,9 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
                     let backendTile = new Tile()
                     backendTile.i = player_i - 1
                     backendTile.checked = true
-                    backendTile.checker = 'backend'
+                    backendTile.checker = 'ai'
                     gs.board[player_i - 1] = backendTile;
-                    if (checkForWinners(gs.board, player_i - 1)) {
+                    if (checkForWinners(gs.board, player_i - 1, 'ai')) {
                         // TODO response player wins   
                     }
                     else {
@@ -212,5 +220,6 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
 module.exports = {
     gameRoutes: gameRoutes,
     isWinningSequence: isWinningSequence,
-    checkForWinners: checkForWinners
+    checkForWinners: checkForWinners,
+    arrayToBoard: arrayToBoard
 };
