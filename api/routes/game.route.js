@@ -16,15 +16,17 @@ const gsPostLimit = rateLimit({
 
 function isWinningSequence(seq) {
     counter = 0
-    seq.forEach(element => {
-        if(element){
+    for(let i = 0; i < seq.length; i++) {
+        if(seq[i]){
             counter++;
-        }
-        else {
+            if (counter >=5) {
+                return true;
+            }
+        } else {
             counter = 0;
         }
-    });
-    return counter >= 5;
+    }
+    return false;
 }
 
 
@@ -59,7 +61,7 @@ function checkForWinners(board, last_i, player) {
     column_seq = []
     for(let i = Math.max(0, parseInt((last_i/10)-5)); i<Math.min(parseInt((last_i/10)+5), 10) ;i++) {
         current_i = i*10 + last_i%10
-        row_seq.push(board[current_i].checked && (board[i].checker === player))
+        row_seq.push(board[current_i].checked && (board[current_i].checker === player))
     }
     if (isWinningSequence(row_seq)){
         return true;
@@ -72,21 +74,33 @@ function checkForWinners(board, last_i, player) {
     axis_es = []
     for(let i = 1; i <5;i++) {
         if ((last_i)%10-i >= 0) {
-            axis_wn.unshift(board[(parseInt(last_i/10)-i)*10 + (last_i)%10-i].checked && (board[i].checker === player))
+            current_i = (parseInt(last_i/10)-i)*10 + (last_i)%10-i
+            if (board[current_i]) {
+                axis_wn.unshift(board[current_i].checked && (board[current_i].checker === player))
+            }
         }
         if ((last_i)%10+i < 10) {
-            axis_ws.push(board[(parseInt(last_i/10)+i)*10 + (last_i)%10+i].checked && (board[i].checker === player))
+            current_i = (parseInt(last_i/10)+i)*10 + (last_i)%10+i
+            if (board[current_i]) {
+                axis_ws.push(board[current_i].checked && (board[current_i].checker === player))
+            }
         }
         if ((last_i)%10+i < 10) {
-            axis_en.unshift(board[(parseInt(last_i/10)-i)*10 + (last_i)%10+i].checked && (board[i].checker === player))
+            current_i = (parseInt(last_i/10)-i)*10 + (last_i)%10+i
+            if (board[current_i]) {
+                axis_en.unshift(board[current_i].checked && (board[current_i].checker === player))
+            }
         }
         if ((last_i)%10+i < 10) {
-            axis_es.push(board[(parseInt(last_i/10)+i)*10 + (last_i)%10-i].checked && (board[i].checker === player))
+            current_i = (parseInt(last_i/10)+i)*10 + (last_i)%10-i
+            if (board[current_i]) {
+                axis_es.push(board[current_i].checked && (board[current_i].checker === player))
+            }
         }
     }
-    axis_wn.push(board[last_i].checked && (board[i].checker === player))
+    axis_wn.push(board[last_i].checked && (board[last_i].checker === player))
     axis_wn.push(...axis_ws)
-    axis_en.push(board[last_i].checked && (board[i].checker === player)) 
+    axis_en.push(board[last_i].checked && (board[last_i].checker === player)) 
     axis_en.push(...axis_es)
     if (isWinningSequence(axis_wn)){
         return true;
