@@ -52,7 +52,7 @@ describe('Test methods ability to validate winning state', () => {
   })
 })
 
-describe('Post/Get Game', async () => {
+describe('Post/Get/Win Game', async () => {
   let jsonBoards = require('./data/boards.json');
 
   it('should not create a new post', async () => {
@@ -75,7 +75,7 @@ describe('Post/Get Game', async () => {
         gameState: {'playerId': 1, 'board': [jsonBoards[1]['board']]}
       })
     expect(res.statusCode).toEqual(200)
-    console.log(res.body._id)
+
     const res2 = await request(app)
     .get(`/api/game/${res.body._id}`)
     expect(res2.statusCode).toEqual(200)
@@ -86,4 +86,58 @@ describe('Post/Get Game', async () => {
   })
 })
 
+
+describe('Player Route', async () => {
+  it('should not create player', async () => {
+    const res = await request(app)
+      .post('/api/player/')
+      .send({
+        name: "Andrzej"
+      })
+    expect(res.statusCode).toEqual(500)
+  })
+  it('should create player', async () => {
+    const res = await request(app)
+      .post('/api/player/')
+      .send({
+        "player": {
+            name: "Andrzej"
+        }
+      })
+    expect(res.statusCode).toEqual(200)
+  })
+  it('should create player, and find it', async () => {
+    //expect.assertions(2);
+    const res = await request(app)
+      .post('/api/player/')
+      .send({
+        "player": {
+            name: "Andrzej"
+        }
+      })
+    expect(res.statusCode).toEqual(200)
+
+    const res2 = await request(app)
+    .get(`/api/player/${res.body}`)
+    expect(res2.statusCode).toEqual(200)
+    expect(res2.body._id).toEqual(res.body)
+  })
+  it('should show player stats', async () => {
+    const res = await request(app)
+      .post('/api/player/')
+      .send({
+        "player": {
+            name: "Andrzej"
+        }
+      })
+    expect(res.statusCode).toEqual(200)
+
+    const res2 = await request(app)
+    .get(`/api/player/stats/${res.body}`)
+    expect(res2.statusCode).toEqual(200)
+    expect(res2.body.wins).toEqual(0)
+    expect(res2.body.draws).toEqual(0)
+    expect(res2.body.loses).toEqual(0)
+  })
+})
 

@@ -45,7 +45,6 @@ function arrayToBoard(board) {
             console.log('error instering tiles')
         }
         else {
-            console.log('tiles inserted')
         }
     })
     return tiles
@@ -137,7 +136,7 @@ function checkForWinners(board, last_i, player) {
  *                      $ref: '#/components/schemas/GameState   '
  *      responses:
  *        "200":
- *          description: Game id
+ *          description: GameState
  *          content:
  *            application/json:
  *              schema:

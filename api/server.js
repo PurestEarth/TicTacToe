@@ -32,7 +32,7 @@ const options = {
     },
     apis: [
           './models/Tile.js', './models/Player.js', './models/GameState.js',
-          './routers/game.route.js'
+          './routers/game.route.js', './routers/player.route.js'
          ],
          schemas: []
   };
@@ -52,7 +52,7 @@ const limiter = rateLimit({
 });
 
 const gameRoute = require('./routes/game.route').gameRoutes;
-
+const playerRoute = require('./routes/player.route').playerRoutes;
 
 const app = express();
 app.use(cors({ origin: (origin, callback) => callback(null, true), credentials: true }));
@@ -60,6 +60,7 @@ app.use(cors({ origin: (origin, callback) => callback(null, true), credentials: 
 app.use(express.json());
 app.use(limiter);
 app.use('/api/game', gameRoute);
+app.use('/api/player', playerRoute);
 app.use(
     "/api-docs",
     swaggerUi.serve,
