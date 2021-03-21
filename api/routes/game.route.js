@@ -40,6 +40,14 @@ function arrayToBoard(board) {
         tile.checker = ownMap[board[i]]
         tiles.push(tile)
     }
+    Tile.insertMany(tiles).then(function(tiles, err) {
+        if (err) {
+            console.log('error instering tiles')
+        }
+        else {
+            console.log('tiles inserted')
+        }
+    })
     return tiles
 }
 
@@ -48,7 +56,7 @@ function checkForWinners(board, last_i, player) {
     // check row
     row_seq = []
     for(let i = Math.max(0, last_i-5); i<Math.min(last_i+5, 100) ;i++) {
-        if(parseInt(last_i/10) == parseInt(i/10)) {
+        if(parseInt(last_i/10) == parseInt(i/10) && board[i]) {
             row_seq.push(board[i].checked && (board[i].checker === player))
         }
     }
@@ -61,9 +69,11 @@ function checkForWinners(board, last_i, player) {
     column_seq = []
     for(let i = Math.max(0, parseInt((last_i/10)-5)); i<Math.min(parseInt((last_i/10)+5), 10) ;i++) {
         current_i = i*10 + last_i%10
-        row_seq.push(board[current_i].checked && (board[current_i].checker === player))
+        if (board[current_i]) {
+            column_seq.push(board[current_i].checked && (board[current_i].checker === player))
+        }
     }
-    if (isWinningSequence(row_seq)){
+    if (isWinningSequence(column_seq)){
         return true;
     }
 
@@ -138,17 +148,51 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
     if (req.body.gameState) {
         let gameState = new GameState();
         let reqgameState = req.body.gameState;
-
-        console.log(reqgameState)
         gameState.gameId = reqgameState.playerId
-        gameState.board = reqgameState.board;
-
-        gameState.save().then( (saved_game_state,err) => {
+        if (Array.isArray(reqgameState.board)) {
+            gameState.board = arrayToBoard(reqgameState.board);
+        } else {
+            gameState.board = reqgameState.board;
+        }
+        gameState.save().then( (saved_game_state, err) => {
             if(err) {
                 res.status(500).send('Something went terribly wrong');
             }
             else {
-                res.json(saved_game_state);
+                res.status(200).json(saved_game_state);
+            }
+        })
+    }
+    else {
+        res.status(500).send();
+    }
+})
+
+
+/**
+ * @swagger
+ * path:
+ *  /gameState/:id:
+ *    get:
+ *      summary: Get game with id
+ *      tags: [GameState]
+ *      responses:
+ *        "200":
+ *          description: GameState
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/GameState'
+*/
+
+gameRoutes.route('/:id').get( gsPostLimit, function(req,res){
+    if (req.params.id) {
+        GameState.findById(req.params.id).exec( function(err, gs){
+            if(err) {
+                res.status(500).send();
+            }
+            else {
+                res.status(200).json(gs);
             }
         })
     }
@@ -180,15 +224,27 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
  *          content:
  *            application/json:
  *              schema:
- *                type: string
+ *                type: boolean
+ *        "201":
+ *          description: Player has made winning move
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: boolean
+ *        "202":
+ *          description: Backend has made the winning move
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: boolean
 */
 
-gameRoutes.route('/').post( gsPostLimit, function(req,res){
+gameRoutes.route('/makeMove/:id/:i').get( gsPostLimit, function(req,res){
     if (req.params.id && req.params.i) {
         let gsId = req.params.id
         let player_i = req.params.i
 
-        GameState.findOne({_id: req.params.id, user_id: req.userId}).exec( function(err, gs){            
+        GameState.findOne({_id: req.params.id, user_id: req.userId}).populate('board').exec( function(err, gs){           
             if(err){
                 res.status(500).send('Something went terribly wrong')
             }
@@ -197,32 +253,36 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
                 playerTile.i = player_i
                 playerTile.checked = true
                 playerTile.checker = 'player'
-                gs.board[player_i] = playerTile;
-                if (checkForWinners(gs.board, player_i, 'player')) {
-                    // TODO response player wins   
-                }
-                else {
-                    // TODO choose right place on board
-                    let backendTile = new Tile()
-                    backendTile.i = player_i - 1
-                    backendTile.checked = true
-                    backendTile.checker = 'ai'
-                    gs.board[player_i - 1] = backendTile;
-                    if (checkForWinners(gs.board, player_i - 1, 'ai')) {
-                        // TODO response player wins   
+                playerTile.save().then(function (p_tile, err) {
+                    gs.board[player_i] = p_tile;
+                    if (checkForWinners(gs.board, player_i, 'player')) {
+                        res.status(201).json(true)
                     }
                     else {
-                        GameState.findOneAndUpdate({_id: gs._id},{board: gs.board}).exec( function(err, _){
-                            if(err){
-                                res.status(500).send('Something went terribly wrong')
+                        // TODO choose right place on board
+                        let backendTile = new Tile()
+                        backendTile.i = player_i - 1
+                        backendTile.checked = true
+                        backendTile.checker = 'ai'
+                        playerTile.save().then(function (b_tile, err) {
+                            gs.board[player_i - 1] = b_tile;
+                            if (checkForWinners(gs.board, player_i - 1, 'ai')) {
+                                res.status(202).json(true) 
                             }
                             else {
-                                res.status(200).json(true)
+                                GameState.findOneAndUpdate({_id: gs._id},{board: gs.board}).exec( function(err, _){
+                                    if(err){
+                                        res.status(500).send('Something went terribly wrong')
+                                    }
+                                    else {
+                                        res.status(200).json(true)
+                                    }
+                                })
                             }
                         })
-                        res.status(200).json(true)
-                    }
-                }
+                        }
+                    })
+                
             }
         })
     }

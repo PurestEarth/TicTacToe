@@ -6,7 +6,6 @@ config = require('./DB'),
 swaggerJsdoc = require("swagger-jsdoc"),
 swaggerUi = require("swagger-ui-express"),
 rateLimit = require("express-rate-limit");
-
 const options = {
     // authAction :{ JWT: {name: "JWT", schema: {type: "apiKey", in: "header", name: "Authorization", description: ""}, value: "Bearer <JWT>"} },
     definition: {
@@ -57,7 +56,8 @@ const gameRoute = require('./routes/game.route').gameRoutes;
 
 const app = express();
 app.use(cors({ origin: (origin, callback) => callback(null, true), credentials: true }));
-
+// parse application/json
+app.use(express.json());
 app.use(limiter);
 app.use('/api/game', gameRoute);
 app.use(
@@ -72,3 +72,4 @@ console.log('Listening on port ' + port);
 });
 
 
+module.exports = server
