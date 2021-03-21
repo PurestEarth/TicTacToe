@@ -148,7 +148,11 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
         let gameState = new GameState();
         let reqgameState = req.body.gameState;
         gameState.gameId = reqgameState.playerId
-        if (Array.isArray(reqgameState.board)) {
+        if(Array.isArray(reqgameState.board) && reqgameState.board.length==0){
+            gameState.board = arrayToBoard(new Array(100).fill(0))
+        }
+        else if (Array.isArray(reqgameState.board)) {
+            console.log('tu')
             gameState.board = arrayToBoard(reqgameState.board);
         } else {
             gameState.board = reqgameState.board;

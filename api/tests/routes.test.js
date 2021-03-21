@@ -63,7 +63,7 @@ describe('Post/Get/Win Game', async () => {
       })
     expect(res.statusCode).toEqual(500)
   })
-  it('should not get a post', async () => {
+  it('should not get game', async () => {
     const res = await request(app)
     .get("/api/game/" + 1)
     expect(res.statusCode).toEqual(500)
