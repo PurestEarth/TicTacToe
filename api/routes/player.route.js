@@ -14,7 +14,7 @@ const playerLimit = rateLimit({
 
 /**
  * @swagger
- * path:
+ * paths:
  *  /player/:
  *    post:
  *      summary: Post new Player
@@ -32,6 +32,10 @@ const playerLimit = rateLimit({
  *            application/json:
  *              schema:
  *                $ref: '#/components/schemas/Player'
+ *        "500":
+ *          description: Request didnt include required field
+ *        "501":
+ *          description: Controller wasnt able to add player
 */
 
 playerRoutes.route('/').post( playerLimit, function(req,res){
@@ -39,18 +43,18 @@ playerRoutes.route('/').post( playerLimit, function(req,res){
         playerController.createPlayer(req.body.player.name).then( player => {
             res.status(200).json(player._id);
         },err=>{
-            res.status(500).send('Something went terribly wrong');
+            res.status(501).send('Player could have not been saved');
         })
     }
     else {
-        res.status(500).send();
+        res.status(500).send('Missing required object');
     }
 })
 
 
 /**
  * @swagger
- * path:
+ * paths:
  *  /player/:id:
  *    get:
  *      summary: Get player with id
@@ -62,6 +66,10 @@ playerRoutes.route('/').post( playerLimit, function(req,res){
  *            application/json:
  *              schema:
  *                $ref: '#/components/schemas/Player'
+ *        "500":
+ *          description: Request didnt include id
+ *        "501":
+ *          description: Controller wasnt able to retrieve player
 */
 
 playerRoutes.route('/:id').get( playerLimit, function(req,res){
@@ -69,24 +77,44 @@ playerRoutes.route('/:id').get( playerLimit, function(req,res){
         playerController.findById(req.params.id).then( player => {
             res.status(200).json(player);
         }, err => {
-            res.status(500).send("write better error messages");
+            res.status(501).send("Error while attempting to retrieve player");
         })
     }
     else {
-        res.status(500).send();
+        res.status(500).send('Missing required id');
     }
 })
+
+/**
+ * @swagger
+ * paths:
+ *  /stats/:id:
+ *    get:
+ *      summary: Get stats of player with id
+ *      tags: [Player]
+ *      responses:
+ *        "200":
+ *          description: Player
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *        "500":
+ *          description: Request didnt include id
+ *        "501":
+ *          description: Controller wasnt able to retrieve player
+*/
 
 playerRoutes.route('/stats/:id').get( playerLimit, function(req,res){
     if (req.params.id) {
         playerController.getStats(req.params.id).then( stats => {
             res.status(200).json(stats);
         }, err => {
-            res.status(500).send();
+            res.status(501).send('Error while attempting to retrieve player');
         })
     }
     else {
-        res.status(500).send();
+        res.status(500).send('Missing required id');
     }
 })
 

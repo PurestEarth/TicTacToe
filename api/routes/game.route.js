@@ -4,8 +4,6 @@ const express = require('express'),
       rateLimit = require("express-rate-limit");
 
 
-
-
 const gsPostLimit = rateLimit({
     windowMs: 24*60 * 60 * 1000,
     max: 100,
@@ -16,7 +14,7 @@ const gsPostLimit = rateLimit({
 
 /**
  * @swagger
- * path:
+ * paths:
  *  /gameState/:
  *    post:
  *      summary: Start new game
@@ -34,6 +32,10 @@ const gsPostLimit = rateLimit({
  *            application/json:
  *              schema:
  *                $ref: '#/components/schemas/GameState'
+ *        "500":
+ *          description: Request is missing required parameters
+ *        "501":
+ *          description: Controller wasnt able to save game
 */
 
 gameRoutes.route('/').post( gsPostLimit, function(req,res){
@@ -52,7 +54,7 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
 
 /**
  * @swagger
- * path:
+ * paths:
  *  /gameState/:id:
  *    get:
  *      summary: Get game with id
@@ -64,6 +66,11 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
  *            application/json:
  *              schema:
  *                $ref: '#/components/schemas/GameState'
+ *        "500":
+ *          description: Request is missing id
+ *        "501":
+ *          description: Controller wasnt able to retrieve game
+ * 
 */
 
 gameRoutes.route('/:id').get( gsPostLimit, function(req,res){
@@ -71,18 +78,18 @@ gameRoutes.route('/:id').get( gsPostLimit, function(req,res){
         gameController.findById(req.params.id).then( game => {
             res.status(200).json(game);
         }, err => {
-            res.status(500).send("write better error messages");
+            res.status(501).send("Controller wasnt able to retrieve game");
         })
     }
     else {
-        res.status(500).send();
+        res.status(500).send("Missing required parameters");
     }
 })
 
 
 /**
  * @swagger
- * path:
+ * paths:
  *  /gameState/makeMove/:id/:i:
  *    post:
  *      summary: Player makes a move at tile with id i, in given game 
@@ -115,6 +122,10 @@ gameRoutes.route('/:id').get( gsPostLimit, function(req,res){
  *            application/json:
  *              schema:
  *                type: boolean
+ *        "500":
+ *          description: Request is missing required parameters
+ *        "501":
+ *          description: Controller wasnt able to finish requested move
 */
 
 gameRoutes.route('/makeMove/:id/:i').get( gsPostLimit, function(req,res){
@@ -122,11 +133,11 @@ gameRoutes.route('/makeMove/:id/:i').get( gsPostLimit, function(req,res){
         gameController.makeMove(req.params.id, req.params.i).then( status => {
             res.status(status).json(true)
         }, err => {
-            res.status(500).send("write better error messages");
+            res.status(501).send("Error while attempting to make a move");
         })
     }
     else {
-        res.status(500).send();
+        res.status(500).send("Missing required parameters");
     }
 })
 
