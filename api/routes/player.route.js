@@ -1,8 +1,7 @@
 const express = require('express'),
       playerRoutes = express.Router(),
+      playerController = require('../controllers/player.controller')
       rateLimit = require("express-rate-limit");
-
-let Player = require('../models/Player');
 
 
 const playerLimit = rateLimit({
@@ -37,15 +36,10 @@ const playerLimit = rateLimit({
 
 playerRoutes.route('/').post( playerLimit, function(req,res){
     if (req.body.player) {
-        let player = new Player();
-        player.name = req.body.player.name
-        player.save().then( (player, err) => {
-            if(err) {
-                res.status(500).send('Something went terribly wrong');
-            }
-            else {
-                res.status(200).json(player._id);
-            }
+        playerController.createPlayer(req.body.player.name).then( player => {
+            res.status(200).json(player._id);
+        },err=>{
+            res.status(500).send('Something went terribly wrong');
         })
     }
     else {
@@ -72,13 +66,10 @@ playerRoutes.route('/').post( playerLimit, function(req,res){
 
 playerRoutes.route('/:id').get( playerLimit, function(req,res){
     if (req.params.id) {
-        Player.findById(req.params.id).exec( function(err, player){
-            if(err) {
-                res.status(500).send();
-            }
-            else {
-                res.status(200).json(player);
-            }
+        playerController.findById(req.params.id).then( player => {
+            res.status(200).json(player);
+        }, err => {
+            res.status(500).send("write better error messages");
         })
     }
     else {
@@ -88,13 +79,10 @@ playerRoutes.route('/:id').get( playerLimit, function(req,res){
 
 playerRoutes.route('/stats/:id').get( playerLimit, function(req,res){
     if (req.params.id) {
-        Player.findById(req.params.id).exec( function(err, player){
-            if(err) {
-                res.status(500).send();
-            }
-            else {
-                res.status(200).json({"wins": player.wins, "draws": player.draws, "loses": player.loses});
-            }
+        playerController.getStats(req.params.id).then( stats => {
+            res.status(200).json(stats);
+        }, err => {
+            res.status(500).send();
         })
     }
     else {

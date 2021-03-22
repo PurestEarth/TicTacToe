@@ -31,8 +31,7 @@ const options = {
       ],
     },
     apis: [
-          './models/Tile.js', './models/Player.js', './models/GameState.js',
-          './routers/game.route.js', './routers/player.route.js'
+          './models/Tile.js', './models/Player.js', './models/GameState.js', './routes/player.route.js', './routes/game.route.js'
          ],
          schemas: []
   };

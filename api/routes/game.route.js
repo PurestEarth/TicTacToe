@@ -1,13 +1,10 @@
 const express = require('express'),
       gameRoutes = express.Router(),
+      gameController = require('../controllers/game.controller')
       rateLimit = require("express-rate-limit");
 
-let GameState = require('../models/GameState');
-let Tile = require('../models/Tile');
-let gameService = require('../services/game.service');
-let arrayToBoard = gameService.arrayToBoard
-let checkForWinners = gameService.checkForWinners
-let isWinningSequence = gameService.isWinningSequence
+
+
 
 const gsPostLimit = rateLimit({
     windowMs: 24*60 * 60 * 1000,
@@ -41,25 +38,10 @@ const gsPostLimit = rateLimit({
 
 gameRoutes.route('/').post( gsPostLimit, function(req,res){
     if (req.body.gameState) {
-        let gameState = new GameState();
-        let reqgameState = req.body.gameState;
-        gameState.gameId = reqgameState.playerId
-        if(Array.isArray(reqgameState.board) && reqgameState.board.length==0){
-            gameState.board = arrayToBoard(new Array(100).fill(0))
-        }
-        else if (Array.isArray(reqgameState.board)) {
-            console.log('tu')
-            gameState.board = arrayToBoard(reqgameState.board);
-        } else {
-            gameState.board = reqgameState.board;
-        }
-        gameState.save().then( (saved_game_state, err) => {
-            if(err) {
-                res.status(500).send('Something went terribly wrong');
-            }
-            else {
-                res.status(200).json(saved_game_state);
-            }
+        gameController.newGame(req.body.gameState).then( saved_game_state => {
+            res.status(200).json(saved_game_state);
+        },err=>{
+            res.status(500).send('Something went terribly wrong');
         })
     }
     else {
@@ -86,13 +68,10 @@ gameRoutes.route('/').post( gsPostLimit, function(req,res){
 
 gameRoutes.route('/:id').get( gsPostLimit, function(req,res){
     if (req.params.id) {
-        GameState.findById(req.params.id).exec( function(err, gs){
-            if(err) {
-                res.status(500).send();
-            }
-            else {
-                res.status(200).json(gs);
-            }
+        gameController.findById(req.params.id).then( game => {
+            res.status(200).json(game);
+        }, err => {
+            res.status(500).send("write better error messages");
         })
     }
     else {
@@ -140,49 +119,10 @@ gameRoutes.route('/:id').get( gsPostLimit, function(req,res){
 
 gameRoutes.route('/makeMove/:id/:i').get( gsPostLimit, function(req,res){
     if (req.params.id && req.params.i) {
-        let gsId = req.params.id
-        let player_i = req.params.i
-
-        GameState.findOne({_id: req.params.id, user_id: req.userId}).populate('board').exec( function(err, gs){           
-            if(err){
-                res.status(500).send('Something went terribly wrong')
-            }
-            else {            
-                let playerTile = new Tile()
-                playerTile.i = player_i
-                playerTile.checked = true
-                playerTile.checker = 'player'
-                playerTile.save().then(function (p_tile, err) {
-                    gs.board[player_i] = p_tile;
-                    if (checkForWinners(gs.board, player_i, 'player')) {
-                        res.status(201).json(true)
-                    }
-                    else {
-                        // TODO choose right place on board
-                        let backendTile = new Tile()
-                        backendTile.i = player_i - 1
-                        backendTile.checked = true
-                        backendTile.checker = 'ai'
-                        playerTile.save().then(function (b_tile, err) {
-                            gs.board[player_i - 1] = b_tile;
-                            if (checkForWinners(gs.board, player_i - 1, 'ai')) {
-                                res.status(202).json(true) 
-                            }
-                            else {
-                                GameState.findOneAndUpdate({_id: gs._id},{board: gs.board}).exec( function(err, _){
-                                    if(err){
-                                        res.status(500).send('Something went terribly wrong')
-                                    }
-                                    else {
-                                        res.status(200).json(true)
-                                    }
-                                })
-                            }
-                        })
-                        }
-                    })
-                
-            }
+        gameController.makeMove(req.params.id, req.params.i).then( status => {
+            res.status(status).json(true)
+        }, err => {
+            res.status(500).send("write better error messages");
         })
     }
     else {
