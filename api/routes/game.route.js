@@ -131,7 +131,7 @@ gameRoutes.route('/:id').get( gsPostLimit, function(req,res){
 gameRoutes.route('/makeMove/:id/:i').get( gsPostLimit, function(req,res){
     if (req.params.id && req.params.i) {
         gameController.makeMove(req.params.id, req.params.i).then( status => {
-            res.status(status).json(true)
+            res.status(status).json(status)
         }, err => {
             res.status(501).send("Error while attempting to make a move");
         })

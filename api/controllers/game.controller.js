@@ -45,6 +45,9 @@ function findById(id) {
 
 function makeMove(id, player_i) {
     return new Promise((resolve, reject) => {
+        if (player_i < 0 || player_i > 99 ) {
+            reject(err)
+        }
         GameState.findById(id).populate('board').exec( function(err, gs){           
             if(err){
                 reject(err)
