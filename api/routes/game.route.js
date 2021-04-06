@@ -122,6 +122,12 @@ gameRoutes.route('/:id').get( gsPostLimit, function(req,res){
  *            application/json:
  *              schema:
  *                type: boolean
+  *        "203":
+ *          description: Game ends in draw
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: boolean
  *        "500":
  *          description: Request is missing required parameters
  *        "501":
@@ -131,7 +137,12 @@ gameRoutes.route('/:id').get( gsPostLimit, function(req,res){
 gameRoutes.route('/makeMove/:id/:i').get( gsPostLimit, function(req,res){
     if (req.params.id && req.params.i) {
         gameController.makeMove(req.params.id, req.params.i).then( status => {
-            res.status(status).json(status)
+            if (status > 100){
+                res.status(status).json(status)
+            } else {
+                res.status(200).json(status)
+            }
+
         }, err => {
             res.status(501).send("Error while attempting to make a move");
         })

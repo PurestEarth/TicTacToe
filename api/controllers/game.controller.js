@@ -4,6 +4,7 @@ let Tile = require('../models/Tile');
 let gameService = require('../services/game.service');
 let arrayToBoard = gameService.arrayToBoard
 let checkForWinners = gameService.checkForWinners
+let getRandomAvailableI = gameService.getRandomAvailableI
 
 
 function newGame(gameState) {
@@ -64,26 +65,32 @@ function makeMove(id, player_i) {
                     }
                     else {
                         // TODO choose right place on board
-                        let backendTile = new Tile()
-                        backendTile.i = player_i - 1
-                        backendTile.checked = true
-                        backendTile.checker = 'ai'
-                        playerTile.save().then(function (b_tile, err) {
-                            gs.board[player_i - 1] = b_tile;
-                            if (checkForWinners(gs.board, player_i - 1, 'ai')) {
-                                resolve(202)
-                            }
-                            else {
-                                GameState.findOneAndUpdate({_id: gs._id},{board: gs.board}).exec( function(err, _){
-                                    if(err){
-                                        reject(err)
-                                    }
-                                    else {
-                                        resolve(200)
-                                    }
+                        backend_i = getRandomAvailableI(gs.board)
+                        if (backend_i === -1) {
+                            resolve(203)
+                        }
+                        else {
+                            let backendTile = new Tile()
+                            backendTile.i = backend_i
+                            backendTile.checked = true
+                            backendTile.checker = 'ai'
+                            playerTile.save().then(function (b_tile, err) {
+                                gs.board[backend_i] = b_tile;
+                                if (checkForWinners(gs.board, backend_i, 'ai')) {
+                                    resolve(202)
+                                }
+                                else {
+                                    GameState.findOneAndUpdate({_id: gs._id},{board: gs.board}).exec( function(err, _){
+                                        if(err){
+                                            reject(err)
+                                        }
+                                        else {
+                                            resolve(backend_i)
+                                        }
+                                    })
+                                }
                                 })
                             }
-                        })
                         }
                     })
                 

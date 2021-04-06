@@ -16,7 +16,8 @@ describe('Test methods ability to validate winning state', () => {
     it('should return true for winning sequences', () => {
       let jsonBoards = require('./data/boards.json');
       Object.keys(jsonBoards).forEach( key => {
-        let board = gameService.arrayToBoard(jsonBoards[key]['board'])
+        let board = gameService.testArrayToBoard(jsonBoards[key]['board'])
+        console.log(key)
         expect(gameService.checkForWinners(board, jsonBoards[key]['last_i'], jsonBoards[key]['player'])).toBe(jsonBoards[key]['expected_result'])
       })
     })

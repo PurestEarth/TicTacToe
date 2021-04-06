@@ -167,7 +167,7 @@
         ],
         "last_i": 22,
         "player": "player",
-        "expected_result": true
+        "expected_result": false
     ,
     "10": {
         "board": [

@@ -35,15 +35,17 @@ export class BoardComponent implements OnInit {
   }
 
   checkTile(i: number) {
+    console.log(i)
     if (!this.tiles[i].checked && this.gameId) {
+      this.tiles[i].checked = true;
+      this.tiles[i].mark = 'X';
       this.gameService.makeMove(this.gameId, i).subscribe( res => {
         console.log('Move made')
-        if (res == 200) {
-          this.tiles[i].checked = true;
-          this.tiles[i].mark = 'X';
+        console.log(res)
+        if (res < 200) {
           if(i > 0) {
-            this.tiles[i-1].checked = true;
-            this.tiles[i-1].mark = 'O';
+            this.tiles[res].checked = true;
+            this.tiles[res].mark = 'O';
           }
         }
         else if (res==201) {
@@ -53,6 +55,10 @@ export class BoardComponent implements OnInit {
         } else if (res == 202) {
           this.gameId = undefined;
           this.wonMessage = "AI won the game"
+          this.initBoard()
+        } else if (res == 203) {
+          this.gameId = undefined;
+          this.wonMessage = "Game ended in a draw"
           this.initBoard()
         }
 
