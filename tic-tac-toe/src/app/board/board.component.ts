@@ -42,21 +42,21 @@ export class BoardComponent implements OnInit {
       this.gameService.makeMove(this.gameId, i).subscribe( res => {
         console.log('Move made')
         console.log(res)
-        if (res < 200) {
+        if (res.code < 200) {
           if(i > 0) {
-            this.tiles[res].checked = true;
-            this.tiles[res].mark = 'O';
+            this.tiles[res.code].checked = true;
+            this.tiles[res.code].mark = 'O';
           }
         }
-        else if (res==201) {
+        else if (res.code==201) {
           this.gameId = undefined;
           this.wonMessage = "You won the game"
           this.initBoard()
-        } else if (res == 202) {
+        } else if (res.code == 202) {
           this.gameId = undefined;
           this.wonMessage = "AI won the game"
           this.initBoard()
-        } else if (res == 203) {
+        } else if (res.code == 203) {
           this.gameId = undefined;
           this.wonMessage = "Game ended in a draw"
           this.initBoard()
