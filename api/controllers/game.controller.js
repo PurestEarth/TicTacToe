@@ -46,6 +46,7 @@ function findById(id) {
 
 function makeMove(id, player_i) {
     return new Promise((resolve, reject) => {
+        // warto wyniesc
         if (player_i < 0 || player_i > 99 ) {
             reject(err)
         }
